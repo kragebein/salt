@@ -36,7 +36,6 @@ edit_contents_{{ webhost }}:
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "Upgrade";
-            proxy_set_header Host $host;
             {%- endif %}
             proxy_hide_header X-Powered-By; ## Hides nginx server version from bad guys.
             proxy_set_header Range $http_range; ## Allows specific chunks of a file to be requested.
@@ -62,7 +61,8 @@ restart_nginx:
 install_new_cert_for_{{ webhost }}:
   cmd.run:
     - name: certbot run -n -m "stian.langvann@gmail.com" --agree-tos -d {{ webhost }} --nginx --cert-name {{ webhost }}
-    - unless: grep 'listen 443 ssl; # managed by Certbot' /etc/nginx/sites-enabled/{{ webhost }}
+    - watch:
+      - file: /etc/nginx/sites-available/{{ webhost }}
   {% endif %}
 {% endfor %}
 
